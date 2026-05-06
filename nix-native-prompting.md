@@ -17,6 +17,21 @@ to every project unless I explicitly override them.
   of any external services the project depends on (Ollama, Anthropic API key
   presence, etc.).
 
+## Working directory conventions
+
+All agent-driven projects live under `/mnt/ai_mod/projects/`. This is a
+deliberate boundary: agent work happens here, not in `/home/nbk/`. If a
+task seems to require touching files outside the project root, stop and
+ask — that's a signal something's gone wrong with the scope, not a hint
+that you should reach further.
+
+Exceptions:
+- Reading from `~/.config/<project>/env` for secrets is fine.
+- Reading from `/mnt/ai_mod/ollama/` for local model weights is fine
+  (read-only — Ollama manages this directory).
+- Anything else outside `/mnt/ai_mod/projects/<this-project>/` requires
+  explicit confirmation.
+
 ## Python projects
 
 - Use `uv` as the package manager. Not pip directly, not poetry.
