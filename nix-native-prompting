@@ -1,0 +1,37 @@
+# Project setup conventions
+
+This system is NixOS (unstable, 25.11+) with an RTX 5070 Ti for local LLM
+work via Ollama on the host (http://localhost:11434). Apply these conventions
+to every project unless I explicitly override them.
+
+## Environment management
+
+- Use a `flake.nix` with a `devShell` for all project dependencies. Never
+  install Python packages, Node packages, or system tools globally.
+- Pin `nixpkgs` to `nixos-unstable` in flake inputs.
+- Set `config.allowUnfree = true` in the flake. Add `config.cudaSupport = true`
+  only if the project itself runs CUDA workloads in-shell (not if it just
+  calls Ollama on the host).
+- Always include a `flake.lock` and commit it.
+- Provide a `shellHook` that prints language versions and confirms reachability
+  of any external services the project depends on (Ollama, Anthropic API key
+  presence, etc.).
+
+## Python projects
+
+- Use `uv` as the package manager. Not pip directly, not poetry.
+- The flake provides Python itself + `uv` + system tooling. `uv` manages the
+  application's Python deps inside the project via `pyproject.toml` and
+  `uv.lock`. Both committed.
+- Prefer `uv run <cmd>` over activating venvs manually.
+
+## Sandboxing for agent execution
+
+- Code that *I* run (orchestration, glue, scripts): runs directly in the dev
+  shell, no isolation needed.
+- Code that *agents* generate or execute (tool calls, shell commands, test
+  runs): must be sandboxed. Default to `bubblewrap` for one-shot commands,
+  `git worktree` + container for per-task workspaces, Docker when the agent
+  harness (e.g., OpenHands) requires it.
+- Never let an agent execute commands with access to `$HOME` outside the
+  project root, the global Nix store (read-only is fine), or the netwo
