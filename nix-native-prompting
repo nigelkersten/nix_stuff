@@ -34,4 +34,36 @@ to every project unless I explicitly override them.
   `git worktree` + container for per-task workspaces, Docker when the agent
   harness (e.g., OpenHands) requires it.
 - Never let an agent execute commands with access to `$HOME` outside the
-  project root, the global Nix store (read-only is fine), or the netwo
+  project root, the global Nix store (read-only is fine), or the network
+  beyond explicitly whitelisted hosts.
+
+## Secrets
+
+- API keys (Anthropic, OpenAI, etc.) live in `~/.config/<project>/env` or
+  via 1Password CLI (`op read`). Never in the repo, never in the flake,
+  never in shell history.
+- The flake's `shellHook` should source the env file if present and warn
+  if a required key is missing.
+
+## Repo hygiene
+
+- `.envrc` with `use flake` for direnv users (assume yes).
+- `.gitignore` excludes `.direnv/`, `result`, `result-*`, `__pycache__/`,
+  `.venv/`, `node_modules/`, `*.log`, and any project-specific data dirs
+  (e.g. `models/`, `outputs/`).
+- README starts with: prereqs (NixOS or Nix with flakes), how to enter the
+  dev shell, how to run the thing, where secrets go.
+
+## What to do when starting a new project
+
+1. Create the flake first, before any code.
+2. Verify `nix develop` works and the shellHook output is correct.
+3. Initialise git, add `.envrc` and `.gitignore`.
+4. Then start writing code.
+
+## What to push back on
+
+If I ask you to do something that violates these conventions (install
+something globally, skip the flake, hardcode a secret, run agent-generated
+code without sandboxing), tell me and ask for confirmation before proceeding.
+Don't silently work around the conventions.
