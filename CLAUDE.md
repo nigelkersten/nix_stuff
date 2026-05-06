@@ -109,3 +109,16 @@ If I ask you to do something that violates these conventions (install
 something globally, skip the flake, hardcode a secret, run agent-generated
 code without sandboxing), tell me and ask for confirmation before proceeding.
 Don't silently work around the conventions.
+
+## When stuck, question the design
+
+If you hit rate limits, timeouts, memory pressure, or repeated failures:
+after one workaround attempt, stop and reconsider the approach before
+iterating further. Constraints are usually information about the design,
+not obstacles to engineer around. Surface what you're seeing and why
+before continuing — one good question beats fifteen minutes of escalating
+workarounds.
+
+Avoid: increasing timeouts beyond reason, retry-with-bigger-numbers,
+weakening tests to pass, catching-and-ignoring exceptions, sleeps to
+dodge rate limits.
