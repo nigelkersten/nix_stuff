@@ -60,6 +60,33 @@ Exceptions:
 - The flake's `shellHook` should source the env file if present and warn
   if a required key is missing.
 
+## Git workflow
+
+Initialise the repo on first run if one doesn't exist. Make a commit at
+every meaningful checkpoint — not at the end of the session, throughout it.
+
+A "meaningful checkpoint" is roughly:
+- After project scaffolding lands (flake, pyproject, directory structure)
+- After each module is implemented and parses cleanly
+- After tests for a module pass
+- After each acceptance criterion is met
+- Before any non-trivial refactor of code I might want to revert
+
+Commit messages should be informative and follow conventional commit style
+(feat:, fix:, refactor:, test:, chore:, docs:). Body should explain *why*
+the change was made when that isn't obvious from the diff. One-line
+messages are fine for trivial changes.
+
+Don't squash, don't rebase, don't force-push. Linear history with frequent
+small commits is the goal — I want to be able to read the log and understand
+the trajectory of the work.
+
+Don't commit secrets, the .env file, or anything in .gitignore. Don't
+configure a remote — local commits only for now.
+
+If a change feels ambiguous or you're making an architectural choice with
+real consequences, mention that in the commit body so I can find it later.
+
 ## Repo hygiene
 
 - `.envrc` with `use flake` for direnv users (assume yes).
