@@ -122,3 +122,9 @@ workarounds.
 Avoid: increasing timeouts beyond reason, retry-with-bigger-numbers,
 weakening tests to pass, catching-and-ignoring exceptions, sleeps to
 dodge rate limits.
+
+## Cost awareness
+
+Pause and confirm the approach before any operation likely to exceed
+~5 minutes wall clock or ~50K tokens. Long autonomous work is fine
+when the plan is solid; expensive when it isn't.
