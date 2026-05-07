@@ -128,3 +128,57 @@ dodge rate limits.
 Pause and confirm the approach before any operation likely to exceed
 ~5 minutes wall clock or ~50K tokens. Long autonomous work is fine
 when the plan is solid; expensive when it isn't.
+
+## Security review checklist for web features
+
+Before completing any web feature implementation, verify these security
+properties:
+
+### Authorization (CRITICAL)
+
+- Every route handler that reads data MUST verify the current user owns
+  or has explicit share access to the resource. Never return data for a
+  slug/ID without checking ownership.
+- Every route handler that mutates data MUST verify ownership (not merely
+  share access).
+- Admin-only routes MUST gate on a checked admin role. Never trust that
+  "authenticated" implies "authorized".
+- Index/list endpoints MUST scope queries to the authenticated user — never
+  return all records across users to non-admins.
+
+### CSRF
+
+- Every `<form method="post">` MUST contain a CSRF token hidden field.
+- HTMX or AJAX POST requests MUST send the CSRF token via a header.
+
+### SSRF
+
+- Any user-supplied URL that will be fetched server-side MUST be validated
+  against a blocklist of private/link-local/metadata IPs before the
+  request is made.
+- Do not trust URL schemes — only allow http/https.
+- Resolve the hostname and check the resulting IP, not just the hostname
+  string.
+
+### Output sanitization
+
+- AI-generated or user-supplied content rendered as HTML MUST pass through
+  an HTML sanitizer (e.g., nh3, bleach) with an explicit allowlist of safe
+  tags/attributes.
+- Filenames in Content-Disposition headers MUST be sanitized to
+  alphanumeric, hyphen, underscore, and dot only.
+- User-controlled strings outside template auto-escaping MUST be manually
+  HTML-escaped.
+
+### Resource protection
+
+- Session secrets must never use default/hardcoded values in production.
+  Refuse to start if unconfigured.
+- File uploads must be size-limited.
+- Expensive operations (LLM API calls) should be rate-limited per user.
+
+### Mental model
+
+Every route is accessible by any authenticated user unless you explicitly
+check ownership. "Authenticated" does not mean "authorized". An attacker
+who signs up legitimately can reach every non-public endpoint.
