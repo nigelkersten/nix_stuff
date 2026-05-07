@@ -14,6 +14,7 @@
   nixpkgs.config.allowUnfree = true;
 
   # Bootloader.
+  boot.loader.timeout = 20;
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
 
@@ -98,15 +99,22 @@
   users.users.nbk = {
     isNormalUser = true;
     description = "nbk";
-    extraGroups = [ "networkmanager" "wheel" "video" ];
-    shell = pkgs.bash;
+    extraGroups = [ "networkmanager" "wheel" "video" "docker" ];
+    shell = pkgs.fish;
     packages = with pkgs; [
-    #  thunderbird
+      vscode
     ];
   };
 
   # Install firefox.
   programs.firefox.enable = true;
+
+  # nbk direnv to ensure envrc usage
+  programs.direnv = {
+    enable = true;
+    nix-direnv.enable = true;
+  };
+  # nbk end
 
   
   programs._1password.enable = true;
@@ -123,7 +131,22 @@
     xwayland.enable = true;
   };
 
-  programs.fish.enable = true;
+  programs.fish = {
+    enable = true;
+    shellAbbrs = {
+      ls = "eza";
+      ll = "eza -lh --git";
+      la = "eza -lah --git";
+      lt = "eza --tree --level=2";
+    };
+    interactiveShellInit = ''
+      if test -f ~/.config/agent-experiment/env
+        for line in (grep -v '^\s*#' ~/.config/agent-experiment/env | grep '=')
+          set -gx (string split -m 1 '=' $line)
+        end
+      end
+    '';
+  };
 
   environment.sessionVariables = {
     # Core Hyprland/Nvidia Requirements
@@ -144,6 +167,16 @@
   environment.systemPackages = with pkgs; [
     wget
     pciutils
+    jq
+    yq
+    ripgrep
+    fd
+    bat
+    eza
+    fzf
+    tree
+    just
+    httpie
     inxi
     kitty
     wofi
@@ -154,6 +187,9 @@
     git
     gh
     htop
+    nvitop
+
+    config.hardware.nvidia.package.persistenced # nbk: override - shouldn't be needed?
 
     # --- Configurable Vim ---
     (vim-full.customize {
@@ -223,6 +259,7 @@
     powerManagement.enable = false;
     open = true;
     nvidiaSettings = true;
+    nvidiaPersistenced = true;
     package = config.boot.kernelPackages.nvidiaPackages.stable;
   };
 
@@ -252,7 +289,7 @@
   };
   # Open the port in your firewall so you can access it 
   # (Or just use localhost:8080 if staying on this machine)
-  networking.firewall.allowedTCPPorts = [ 8080 ];
+  # networking.firewall.allowedTCPPorts = [ 8080 ];
   # nbk end
 
   services.hardware.bolt.enable = true; # nbk thunderbolt
@@ -267,6 +304,16 @@
   # nbk end
   
   
+  # nbk docker
+  virtualisation.docker = {
+    enable = true;
+    # rootless mode — agent containers shouldn't have root on host
+    rootless = {
+      enable = true;
+      setSocketVariable = true;
+    };
+  };
+  # nbk docker end
 
   # Enable the OpenSSH daemon.
   # services.openssh.enable = true;
